@@ -12,8 +12,52 @@ public class VisionadoDAO implements CrudDAO<Visionado> {
 
     private Connection con;
 
-    public VisionadoDAO( Connection connection ) {
+    public VisionadoDAO(Connection connection) {
         con = connection;
+    }
+
+    public List<Visionado> listarByPelicula(long idpelicula) throws SQLException {
+        List<Visionado> visionados = new ArrayList<>();
+        CrudDAO<Pelicula> peliculasDAO = new PeliculaDAO(con);
+        CrudDAO<Usuario> usuariosDAO = new UsuarioDAO(con);
+        String sql = "SELECT idvisionado, idusuario, idpelicula, fecha FROM visionados WHERE idpelicula = ?";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1, idpelicula);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                Visionado visionado = new Visionado();
+                visionado.setId(rs.getLong("idvisionado"));
+                Pelicula pelicula = peliculasDAO.obtener(rs.getLong("idpelicula"));
+                visionado.setPelicula(pelicula);
+                Usuario usuario = usuariosDAO.obtener(rs.getLong("idusuario"));
+                visionado.setUsuario(usuario);
+                visionado.setFecha(rs.getDate("fecha").toLocalDate());
+                visionados.add(visionado);
+            }
+        }
+        return visionados;
+    }
+
+    public List<Visionado> listarByUsuario(long idusuario) throws SQLException {
+        List<Visionado> visionados = new ArrayList<>();
+        CrudDAO<Pelicula> peliculasDAO = new PeliculaDAO(con);
+        CrudDAO<Usuario> usuariosDAO = new UsuarioDAO(con);
+        String sql = "SELECT idvisionado, idusuario, idpelicula, fecha FROM visionados WHERE idusuario = ?";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1, idusuario);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                Visionado visionado = new Visionado();
+                visionado.setId(rs.getLong("idvisionado"));
+                Pelicula pelicula = peliculasDAO.obtener(rs.getLong("idpelicula"));
+                visionado.setPelicula(pelicula);
+                Usuario usuario = usuariosDAO.obtener(rs.getLong("idusuario"));
+                visionado.setUsuario(usuario);
+                visionado.setFecha(rs.getDate("fecha").toLocalDate());
+                visionados.add(visionado);
+            }
+        }
+        return visionados;
     }
 
     @Override
@@ -22,11 +66,11 @@ public class VisionadoDAO implements CrudDAO<Visionado> {
         CrudDAO<Pelicula> peliculasDAO = new PeliculaDAO(con);
         CrudDAO<Usuario> usuariosDAO = new UsuarioDAO(con);
         String sql = "SELECT idvisionado, idusuario, idpelicula, fecha FROM visionados";
-        try(Statement st = con.createStatement()) {
+        try (Statement st = con.createStatement()) {
             ResultSet rs = st.executeQuery(sql);
-            while( rs.next()) {
+            while (rs.next()) {
                 Visionado visionado = new Visionado();
-                visionado.setId( rs.getLong("idvisionado"));
+                visionado.setId(rs.getLong("idvisionado"));
                 Pelicula pelicula = peliculasDAO.obtener(rs.getLong("idpelicula"));
                 visionado.setPelicula(pelicula);
                 Usuario usuario = usuariosDAO.obtener(rs.getLong("idusuario"));
@@ -44,12 +88,12 @@ public class VisionadoDAO implements CrudDAO<Visionado> {
         CrudDAO<Pelicula> peliculasDAO = new PeliculaDAO(con);
         CrudDAO<Usuario> usuariosDAO = new UsuarioDAO(con);
         String sql = "SELECT idvisionado, idusuario, idpelicula, fecha FROM visionados WHERE idvisionado = ?";
-        try(PreparedStatement pst = con.prepareStatement(sql)) {
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setLong(1, id);
             ResultSet rs = pst.executeQuery();
-            if( rs.next()) {
+            if (rs.next()) {
                 visionado = new Visionado();
-                visionado.setId( rs.getLong("idvisionado"));
+                visionado.setId(rs.getLong("idvisionado"));
                 Pelicula pelicula = peliculasDAO.obtener(rs.getLong("idpelicula"));
                 visionado.setPelicula(pelicula);
                 Usuario usuario = usuariosDAO.obtener(rs.getLong("idusuario"));
@@ -63,7 +107,7 @@ public class VisionadoDAO implements CrudDAO<Visionado> {
     @Override
     public void alta(Visionado elemento) throws SQLException {
         String sql = "INSERT INTO visionados( idusuario, idpelicula, fecha ) VALUES (?, ?, ?)";
-        try ( PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {     // Para recuperar la ID autogenerada
+        try (PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {     // Para recuperar la ID autogenerada
             pst.setLong(1, elemento.getUsuario().getId());
             pst.setLong(2, elemento.getPelicula().getId());
             pst.setDate(3, Date.valueOf(elemento.getFecha()));
@@ -77,7 +121,7 @@ public class VisionadoDAO implements CrudDAO<Visionado> {
     @Override
     public void actualizar(Visionado elemento) throws SQLException {
         String sql = "UPDATE visionados SET idusuario = ? , idpelicula = ? , fecha = ? WHERE idvisionado = ?";
-        try ( PreparedStatement pst = con.prepareStatement(sql)) {     // Para recuperar la ID autogenerada
+        try (PreparedStatement pst = con.prepareStatement(sql)) {     // Para recuperar la ID autogenerada
             pst.setLong(1, elemento.getUsuario().getId());
             pst.setLong(2, elemento.getPelicula().getId());
             pst.setDate(3, Date.valueOf(elemento.getFecha()));
@@ -88,7 +132,7 @@ public class VisionadoDAO implements CrudDAO<Visionado> {
 
     @Override
     public void eliminar(Visionado elemento) throws SQLException {
-        try( PreparedStatement pst = con.prepareStatement("DELETE FROM visionados WHERE idvisionado = ?") ) {
+        try (PreparedStatement pst = con.prepareStatement("DELETE FROM visionados WHERE idvisionado = ?")) {
             pst.setLong(1, elemento.getId());
             pst.executeUpdate();
         }

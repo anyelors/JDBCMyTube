@@ -15,6 +15,29 @@ public class PeliculaDAO implements CrudDAO<Pelicula> {
         this.con = connection;
     }
 
+    public List<Pelicula> listarByGenero( long idgenero ) throws SQLException {
+        List<Pelicula> peliculas = new ArrayList<>();
+        CrudDAO<Genero> generoDAO = new GeneroDAO(con);
+        String sql = "SELECT idpelicula, titulo, idgenero, adulto, anyo, visionados FROM peliculas WHERE idgenero = ? ";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1, idgenero);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()){
+                Pelicula pelicula = new Pelicula();
+                pelicula.setId(rs.getLong("idpelicula"));
+                pelicula.setTitulo(rs.getString("titulo"));
+                Genero genero = generoDAO.obtener(rs.getLong("idgenero"));
+                pelicula.setGenero(genero);
+                pelicula.setAdulto(rs.getBoolean("adulto"));
+                pelicula.setAnyo(rs.getInt("anyo"));
+                pelicula.setVisionado(rs.getInt("visionados"));
+
+                peliculas.add(pelicula);
+            }
+        }
+        return peliculas;
+    }
+
     @Override
     public List<Pelicula> listar() throws SQLException {
         List<Pelicula> peliculas = new ArrayList<>();

@@ -86,6 +86,6 @@ public class Pelicula {
                 ", Adulto = " + adulto +
                 ", Año = " + anyo +
                 ", Visionado = " + visionado +
-                '}';
+                ']';
     }
 }
